@@ -1,5 +1,5 @@
 ---
-title: "📊 Análise dos Indicadores Educacionais Brasileiros"
+title: "📊 Análise acerca da realação entre distorção idade-série e o abandono escolar e sua relação com o afetam a taxa de aprovação"
 author: "Carlos Eduardo Ribeiro"
 date: "2025-11-26"
 output:
@@ -22,6 +22,266 @@ Este projeto tem como objetivo analisar os Indicadores Educacionais Brasileiros,
 A análise irá contemplar variáveis relacionadas ao acesso, permanência e desempenho dos estudantes, permitindo uma visão ampla da qualidade educacional no Brasil.
 
 <h>
+
+## Baixando a Base de dados teste
+
+```{r}
+rm(list=ls())
+```
+## Tratando os dados
+
+```{r Função para tratar rendimento}
+
+limpar_inep_rendimento <- function(arquivo) {
+  
+  # Ler arquivo pulando cabeçalhos decorativos
+  df <- read_excel(arquivo, skip = 9, col_names = FALSE)
+  
+  # Criar nomes das colunas conforme estrutura oficial
+  nomes <- c(
+    "ano", "unidade_geografica", "localizacao", "dependencia_administrativa",
+    
+    # Aprovação EF
+    paste0("aprov_fund_", c(
+      "total", "anos_iniciais", "anos_finais",
+      "1ano","2ano","3ano","4ano","5ano","6ano","7ano","8ano","9ano"
+    )),
+    
+    # Aprovação EM
+    paste0("aprov_med_", c("total","1serie","2serie","3serie","4serie","nao_seriado")),
+    
+    # Reprovação EF
+    paste0("reprov_fund_", c(
+      "total", "anos_iniciais", "anos_finais",
+      "1ano","2ano","3ano","4ano","5ano","6ano","7ano","8ano","9ano"
+    )),
+    
+    # Reprovação EM
+    paste0("reprov_med_", c("total","1serie","2serie","3serie","4serie","nao_seriado")),
+    
+    # Abandono EF
+    paste0("aband_fund_", c(
+      "total", "anos_iniciais", "anos_finais",
+      "1ano","2ano","3ano","4ano","5ano","6ano","7ano","8ano","9ano"
+    )),
+    
+    # Abandono EM
+    paste0("aband_med_", c("total","1serie","2serie","3serie","4serie","nao_seriado"))
+  )
+  
+  # Aplicar nomes
+  colnames(df) <- nomes
+  
+  # Tratamento de dados
+  df <- df %>%
+    mutate(across(where(is.character), ~ gsub(",", ".", .))) %>%  # vírgula → ponto
+    mutate(across(everything(), ~ na_if(., "--"))) %>%            # "--" → NA
+    mutate(across(everything(), ~ na_if(., ""))) %>%              # "" → NA
+    mutate(across(-c(ano, unidade_geografica, localizacao, dependencia_administrativa),
+                  ~ suppressWarnings(as.numeric(.))))              # converter números
+  
+  return(df)
+}
+
+
+```
+
+
+
+```{r Função para tratar distorção}
+
+limpar_inep_distorcao <- function(arquivo) {
+  
+  df <- read_excel(arquivo, skip = 9, col_names = FALSE)
+  
+  nomes <- c(
+    "ano", "unidade_geografica", "localizacao", "dependencia_administrativa",
+    
+    # TDI – Ensino Fundamental
+    paste0("tdi_fund_", c(
+      "total","anos_iniciais","anos_finais",
+      "1ano","2ano","3ano","4ano","5ano",
+      "6ano","7ano","8ano","9ano"
+    )),
+    
+    # TDI – Ensino Médio
+    paste0("tdi_med_", c("total","1serie","2serie","3serie","4serie"))
+  )
+  
+  colnames(df) <- nomes
+  
+  df <- df %>%
+    mutate(across(where(is.character), ~ gsub(",", ".", .))) %>%
+    mutate(across(everything(), ~ na_if(., "--"))) %>%
+    mutate(across(everything(), ~ na_if(., ""))) %>%
+    mutate(across(-c(ano, unidade_geografica, localizacao, dependencia_administrativa),
+                  ~ suppressWarnings(as.numeric(.))))
+  
+  return(df)
+}
+
+
+```
+
+
+```{r Baixando dados}
+
+library(readxl)
+library(dplyr)
+library(purrr)
+library(janitor)
+
+caminho <- "C:/Users/carlo/Downloads/data"
+
+arquivos <- list(
+  rendimento_2022 = file.path(caminho, "tx_rend_brasil_regioes_ufs_2022.xlsx"),
+  rendimento_2023 = file.path(caminho, "tx_rend_brasil_regioes_ufs_2023.xlsx"),
+  rendimento_2024 = file.path(caminho, "tx_rend_brasil_regioes_ufs_2024.xlsx"),
+  
+  distorcao_2022 = file.path(caminho, "TDI_BRASIL_REGIOES_UFS_2022.xlsx"),
+  distorcao_2023 = file.path(caminho, "TDI_BRASIL_REGIOES_UFS_2023.xlsx"),
+  distorcao_2024 = file.path(caminho, "TDI_BRASIL_REGIOES_UFS_2024.xlsx")
+)
+
+dados <- map(arquivos, ~ read_excel(.x) %>% clean_names())
+
+names(dados) <- names(arquivos)
+
+```
+
+```{r Função de tratamento}
+
+dados <- map2(
+  names(arquivos),
+  arquivos,
+  function(nm, arq) {
+    if (grepl("rendimento", nm)) {
+      limpar_inep_rendimento(arq)
+    } else {
+      limpar_inep_distorcao(arq)
+    }
+  }
+) %>% set_names(names(arquivos))
+
+
+```
+
+
+```{r Unido data frames}
+
+# Rendimento (2022–2024)
+rendimento <- bind_rows(
+  dados$rendimento_2022 %>% mutate(ano = 2022),
+  dados$rendimento_2023 %>% mutate(ano = 2023),
+  dados$rendimento_2024 %>% mutate(ano = 2024)
+)
+
+# Distorção idade-série
+distorcao <- bind_rows(
+  dados$distorcao_2022 %>% mutate(ano = 2022),
+  dados$distorcao_2023 %>% mutate(ano = 2023),
+  dados$distorcao_2024 %>% mutate(ano = 2024)
+)
+
+```
+
+```{r Unindo dataframes}
+
+# --- 1. Unir os datasets já tratados ---
+rendimento$origem <- "rendimento"
+distorcao$origem <- "distorcao"
+
+# Garantir que ano, localização, unidade, dependência existam em ambos
+chaves <- c("ano","unidade_geografica","localizacao","dependencia_administrativa")
+
+# Selecionar só variáveis importantes
+rend_key <- rendimento %>% select(any_of(chaves),
+                                  starts_with("aprov"),
+                                  starts_with("reprov"),
+                                  starts_with("aband"))
+
+dist_key <- distorcao %>% select(any_of(chaves),
+                                  starts_with("tdi"))
+
+# --- 2. Juntar (inner_join garante alinhamento perfeito entre bases) ---
+base_final <- rend_key %>%
+  inner_join(dist_key, by = chaves)
+
+glimpse(base_final)
+
+```
+
+```{r variáveis centrais para análise}
+
+base_final <- base_final %>%
+  mutate(
+    # Indicadores combinados
+    distorcao_total = rowMeans(select(., tdi_fund_total, tdi_med_total), na.rm = TRUE),
+    abandono_total  = rowMeans(select(., aband_fund_total, aband_med_total), na.rm = TRUE),
+    aprovacao_total = rowMeans(select(., aprov_fund_total, aprov_med_total), na.rm = TRUE)
+  )
+
+```
+
+
+```{r}
+
+limpar_inep_rendimento <- function(arquivo) {
+  
+  # Agora pulando exatamente as 8 linhas corretas
+  df <- read_excel(arquivo, skip = 8, col_names = TRUE)
+  
+  # Limpa nomes automáticos
+  df <- clean_names(df)
+  
+  # Troca vírgulas por pontos apenas onde necessário
+  df <- df %>%
+    mutate(across(where(is.character), ~ gsub(",", ".", .)))
+  
+  # Converte as colunas numéricas (mantendo 4 primeiras como texto)
+  df <- df %>% 
+    mutate(across(
+      -c(1:4),
+      ~ suppressWarnings(as.numeric(.))
+    ))
+  
+  return(df)
+}
+
+limpar_inep_distorcao <- function(arquivo) {
+  
+  df <- read_excel(arquivo, skip = 8, col_names = TRUE)
+  
+  df <- clean_names(df)
+  
+  df <- df %>%
+    mutate(across(where(is.character), ~ gsub(",", ".", .)))
+  
+  df <- df %>%
+    mutate(across(
+      -c(1:4),
+      ~ suppressWarnings(as.numeric(.))
+    ))
+  
+  return(df)
+}
+
+```
+
+## Análise de correlações
+
+```{r Análise 1}
+
+library(dplyr)
+
+correlacoes <- base_final %>% 
+  select(aprovacao_total, distorcao_total, abandono_total)
+
+as.data.frame(cor(correlacoes, use = "complete.obs"))
+
+
+```
+
 
 ## 🧪 Metodologia
 
