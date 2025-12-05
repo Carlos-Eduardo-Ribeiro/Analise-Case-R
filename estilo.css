@@ -1,0 +1,75 @@
+<script>
+
+.caixa-intro {
+  background: #2c3e50;
+  padding: 20px;
+  border-left: 6px solid #2980b9;
+  border-radius: 10px;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* Aparência das abas principais */
+.nav-tabs > li > a,
+.nav-pills > li > a {
+  background-color: #e9ecef !important;
+  color: #2c3e50 !important;
+  font-weight: 600;
+  border-radius: 8px !important;
+}
+
+.nav-tabs > li.active > a,
+.nav-pills > li.active > a {
+  background-color: #2980b9 !important;
+  color: white !important;
+}
+
+/* Fundo das caixas */
+.tab-content {
+  border: 1px solid #dcdcdc;
+  padding: 20px;
+  border-radius: 8px;
+  background: #ffffff;
+  margin-top: 15px;
+}
+
+/* Títulos */
+h1, h2, h3 {
+  font-family: "Segoe UI", sans-serif;
+}
+/* --- Estilizar o TÍTULO vindo do YAML --- */
+
+h1.title {
+    background: #2980b9;      /* cor de fundo */
+    color: white;             /* cor da fonte */
+    padding: 20px;            /* espaço interno */
+    text-align: center;       /* centralizar */
+    border-radius: 8px;       /* cantos arredondados */
+    margin-top: 25px;         /* afastar do topo */
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* sombra opcional */
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const tabsets = document.querySelectorAll('.tabset');
+  
+  tabsets.forEach(tabset => {
+    const links = tabset.querySelectorAll("a[data-toggle='tab']");
+    
+    links.forEach(link => {
+      link.addEventListener("click", function () {
+        // fecha todas as abas exceto a clicada
+        links.forEach(other => {
+          if (other !== link) {
+            const id = other.getAttribute("href");
+            const content = document.querySelector(id);
+            if (content) content.classList.remove("active", "in");
+          }
+        });
+      });
+    });
+  });
+});
+</script>
+

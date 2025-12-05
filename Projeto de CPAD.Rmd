@@ -1,68 +1,590 @@
 ---
-title: "📊 Análise dos Indicadores Educacionais Brasileiros"
+title: "Como a distorção idade-série e o abandono escolar afetam a taxa de aprovação"
 author: "Carlos Eduardo Ribeiro"
-date: "2025-11-26"
+date: "2025-11-01"
 output:
   html_document:
     theme: flatly
-    highlight: tango
-    toc: true
-    toc_float: true
+    toc: false
+    toc_float: false
     df_print: paged
-    css: "estilo.css"
+    code_folding: show
+    includes:
+      in_header: estilo.css
+      after_body: tabs.js
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## 📘 Introdução
+<div style="
+  background: #ffffff;
+  padding: 30px;
+  margin: 40px auto;
+  max-width: 1100px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  transition: box-shadow 0.3s ease;
+">
 
-Este projeto tem como objetivo analisar os Indicadores Educacionais Brasileiros, buscando compreender padrões, avanços e desigualdades presentes na educação do país.
-A análise irá contemplar variáveis relacionadas ao acesso, permanência e desempenho dos estudantes, permitindo uma visão ampla da qualidade educacional no Brasil.
+# {.tabset .tabset-pills} 
 
-<h>
+## Introdução {.tabset}
 
-## 🧪 Metodologia
+### Introdução
 
-A metodologia adotada na análise inclui:
+<hr style="height: 1px; background: #000;">
 
-1. **Coleta dos Dados**
+A educação brasileira carrega, ao longo de décadas, desafios estruturais que impactam diretamente o futuro de milhões de estudantes. Entre esses desafios, dois se destacam pela intensidade com que afetam a trajetória escolar: a distorção idade-série — quando o estudante está em uma série incompatível com sua idade — e o abandono escolar, fenômeno que interrompe o direito à educação e compromete oportunidades futuras.
 
-- Os dados serão obtidos diretamente do portal do INEP, no conjunto de Indicadores Educacionais.
+Ambos os indicadores se conectam profundamente à desigualdade social, ao acesso desigual a políticas públicas e às condições socioeconômicas regionais. Em muitos contextos, a repetência e o atraso escolar funcionam como um ciclo que se retroalimenta: estudantes mais velhos, deslocados do grupo etário, tendem a apresentar menor engajamento, maior exposição a riscos e maior probabilidade de abandonar a escola.
 
-- Após o download, os arquivos serão tratados para garantir integridade e padronização.</br></br>
+Neste trabalho, busco compreender como esses dois fenômenos — distorção idade-série e abandono escolar — influenciam a taxa de aprovação no Brasil, utilizando dados oficiais do INEP entre 2022 e 2024. Por meio de análise estatística e visualização de dados, investigamos padrões, relações e possíveis implicações para o sistema educacional brasileiro.
+
+Meu objetivo não é apenas descrever números, mas gerar reflexão sobre os fatores que moldam a permanência e o sucesso dos estudantes. Ao entender como essas variáveis se relacionam, contribuímos para uma discussão essencial: como garantir que mais alunos avancem em suas trajetórias escolares com dignidade e qualidade? </br></br>
+
+### Definição do problema e Justificativa sociopedagógica
+
+<hr style="height: 1px; background: #000;">
+
+A reprovação e o abandono escolar continuam sendo indicadores críticos na educação básica brasileira. Entretanto, esses fenômenos não acontecem de forma isolada. Diversos estudos apontam que eles estão profundamente associados à distorção idade-série, situação em que o estudante acumula atrasos sucessivos que prejudicam seu aprendizado, sua motivação e seu vínculo com a escola.
+
+O problema central que investigamos é:
+
+Em que medida a distorção idade-série e o abandono escolar explicam a variação nas taxas de aprovação?
+
+Justifica-se esta análise porque:
+
+- A distorção idade-série funciona como um marcador de desigualdade educacional.
+
+- O abandono escolar está associado a vulnerabilidades sociais e impactos econômicos.
+
+- A aprovação escolar é um dos principais indicadores de progressão e sucesso educacional.
+
+- Entender as relações entre esses indicadores auxilia gestores, pesquisadores e escolas na criação de políticas mais eficientes.
+
+Além disso, o período analisado (2022–2024) é particularmente relevante, pois marca a fase de recuperação pós-pandemia, quando o país enfrentou picos de defasagem de aprendizagem e aumento nas desigualdades regionais. </br></br>
+
+### Abordagem, metodologia e utilidade da análise
+
+<hr style="height: 1px; background: #000;">
+
+A análise proposta parte da seguinte declaração de problema: entender como a distorção idade-série e o abandono escolar influenciam a taxa de aprovação no Brasil. Para abordar essa questão, utilizo os microdados oficiais do INEP referentes aos indicadores educacionais de 2022 a 2024, incluindo informações desagregadas por dependência administrativa, localização geográfica e etapas de ensino. Esses dados foram previamente tratados, padronizados e consolidados em uma base unificada, garantindo consistência, comparabilidade e ausência de duplicidades.
+
+A metodologia empregada combina análise descritiva, estudos correlacionais e visualização gráfica. Primeiro, foram calculados indicadores agregados de aprovação, abandono e distorção idade-série, permitindo observar tendências gerais. Em seguida, aplicou-se uma análise de correlação para verificar a direção e intensidade das relações entre as variáveis. Por fim, utilizaram-se gráficos de dispersão e tendências para interpretar visualmente o comportamento dos fenômenos ao longo dos anos e entre diferentes grupos. Essa abordagem é adequada porque permite identificar, de forma direta, se taxas mais elevadas de distorção e abandono se associam a reduções nas taxas de aprovação — oferecendo evidências estatísticas e empíricas para sustentar conclusões.
+
+Ao adotar essa técnica, minha intenção é fornecer um diagnóstico claro que ajuda a responder total ou parcialmente o problema proposto. Embora a correlação não determine causalidade, ela revela padrões consistentes que sugerem onde políticas públicas ou ações de gestão podem ser mais efetivas. A combinação de estatísticas descritivas e correlações permite mapear fragilidades do sistema educacional e identificar grupos mais vulneráveis a reprovação e abandono.
+
+Essa análise também tem utilidade prática para potenciais “clientes” — como gestores escolares, secretarias de educação, pesquisadores e formuladores de políticas públicas. Os resultados ajudam a:
+
+- identificar fatores que mais pressionam a taxa de aprovação;
+
+- priorizar regiões, redes ou etapas de ensino que exigem intervenção imediata;
+
+- compreender como distorção e abandono caminham juntos e afetam o desempenho;
+
+- embasar decisões com evidências, evitando achismos;
+
+- orientar alocação de recursos, formação docente e políticas de permanência.
+
+Com isso, a análise não apenas descreve o cenário educacional brasileiro, mas contribui para a formulação de estratégias mais eficientes, voltadas à redução da desigualdade e à melhoria da qualidade da educação. </br></br>
+
+## Pacotes utilizados {.tabset}
+
+### Descrição utilizados
+
+<hr style="height: 1px; background: #000;">
+
+Todos os pacotes necessários para a análise foram carregados antecipadamente com o objetivo de garantir transparência, reprodutibilidade e facilidade de replicação dos resultados. Ao explicitar previamente as dependências do projeto, qualquer leitor, avaliador ou pesquisador pode instalar as mesmas bibliotecas e reproduzir o processamento de dados e as análises estatísticas sem inconsistências ou incompatibilidades. </br></br>
+
+### Propósito de cada pacote utilizado
+
+<hr style="height: 1px; background: #000;">
+
+1. readxl
+
+- Permite importar arquivos Excel (.xlsx) diretamente para o R.
+
+- Fundamental porque os indicadores educacionais do INEP são fornecidos exatamente nesse formato.</br></br>
+
+2. dplyr
+
+- Pacote central para manipulação e transformação de dados.
+
+- Usado para selecionar colunas, filtrar linhas, criar novas variáveis, agrupar dados e sumarizar resultados.</br></br>
+
+3. tidyr
+
+- Auxilia na organização dos dados, especialmente em tarefas de pivotar colunas, normalizar estruturas e tratar bases “largas” ou “longas”.</br></br>
+
+4. stringr
+
+- Conjunto de funções para manipulação de texto (strings).
+
+- Essencial para ajustar nomes de variáveis, extrair anos dos nomes de arquivos e padronizar categorias.</br></br>
+
+5. purrr
+
+- Facilita operações repetidas com listas e funções, como aplicar automaticamente funções de limpeza em vários arquivos do INEP.</br></br>
+
+6. janitor
+
+- padronizar nomes das colunas (clean_names()),
+
+- remover linhas vazias ou duplicadas,
+
+- facilitar inspeções iniciais da base.</br></br>
+
+7. ggplot2
+
+- Principal biblioteca de visualização de dados no R.
+
+- Utilizado para gerar gráficos de correlação, dispersão e tendências temporais.</br></br>
+
+## Fonte dos Dados {.tabset}
+
+### Fonte Principal
+
+<hr style="height: 1px; background: #000;">
+
+Todos os dados utilizados neste projeto estão disponíveis publicamente no portal do INEP, na área de dados abertos.
+
+Link para fonte dos dados: 
+<a href="https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/indicadores-educacionais" target="_blank">
+    INEP – Indicadores Educacionais
+</a>
+<br><br>
 
 
-2. **Limpeza e Preparação dos Dados**
+### Descrição e Preparação dos Dados
 
-- Ajuste de nomes de colunas
+<hr style="height: 1px; background: #000;">
 
-- Tratamento de valores ausentes
+Os dados utilizados neste projeto foram obtidos no portal de Dados Abertos do Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira (INEP), que publica anualmente indicadores oficiais da Educação Básica. O propósito original dessas bases é monitorar o desempenho e condições do fluxo escolar, permitindo que gestores, pesquisadores e o público geral acompanhem:
 
-- Conversão de tipos (numérico, fator, etc.)</br></br>
+- Taxas de aprovação, reprovação e abandono escolar
+
+- Indicadores de distorção idade-série
+
+- Resultados desagregados por ano, unidade da federação, localização (urbana/rural) e dependência administrativa (Federal, Estadual, Municipal)
+
+As bases utilizadas correspondem aos anos 2022, 2023 e 2024, sendo disponibilizadas pelo INEP já em formato de planilha Excel (.xlsx). Cada arquivo contém múltiplas seções e cabeçalhos extensos, pois foram originalmente organizados para leitura humana, não para análise automática. Assim, foi necessário um processo consistente de limpeza.
+
+Os dados originais possuíam:
+
+- Várias linhas de cabeçalho decorativo (identificação do INEP, título da tabela, explicações metodológicas).
+
+- Ausência de nomes claros para as colunas, exigindo criação manual.
+
+- Uso de vírgula no padrão brasileiro (“95,3”), necessitando conversão para ponto decimal.
+
+- Valores ausentes representados por "--", células vazias ou zeros artificiais, dependendo do indicador.
+
+O volume de variáveis variava entre arquivos, mas cada tabela continha aproximadamente:
+
+- 4 variáveis categóricas (ano, UF/região, localização, dependência administrativa)
+
+- +38 a 60 variáveis numéricas, dependendo do tipo (rendimento ou distorção)
+
+Essas características tornam essas bases típicas de dados governamentais brutos: completos, porém não imediatamente adequados para análise computacional. </br></br>
+
+## Tratando os dados {.tabset}
+
+### Função limpar_inep_rendimento
+
+<hr style="height: 1px; background: #000;">
+
+```{r Função para tratar rendimento}
+
+limpar_inep_rendimento <- function(arquivo) {
+  
+  # Ler arquivo pulando cabeçalhos decorativos
+  df <- read_excel(arquivo, skip = 9, col_names = FALSE)
+  
+  # Criar nomes das colunas conforme estrutura oficial
+  nomes <- c(
+    "ano", "unidade_geografica", "localizacao", "dependencia_administrativa",
+    
+    # Aprovação EF
+    paste0("aprov_fund_", c(
+      "total", "anos_iniciais", "anos_finais",
+      "1ano","2ano","3ano","4ano","5ano","6ano","7ano","8ano","9ano"
+    )),
+    
+    # Aprovação EM
+    paste0("aprov_med_", c("total","1serie","2serie","3serie","4serie","nao_seriado")),
+    
+    # Reprovação EF
+    paste0("reprov_fund_", c(
+      "total", "anos_iniciais", "anos_finais",
+      "1ano","2ano","3ano","4ano","5ano","6ano","7ano","8ano","9ano"
+    )),
+    
+    # Reprovação EM
+    paste0("reprov_med_", c("total","1serie","2serie","3serie","4serie","nao_seriado")),
+    
+    # Abandono EF
+    paste0("aband_fund_", c(
+      "total", "anos_iniciais", "anos_finais",
+      "1ano","2ano","3ano","4ano","5ano","6ano","7ano","8ano","9ano"
+    )),
+    
+    # Abandono EM
+    paste0("aband_med_", c("total","1serie","2serie","3serie","4serie","nao_seriado"))
+  )
+  
+  # Aplicar nomes
+  colnames(df) <- nomes
+  
+  # Tratamento de dados
+  df <- df %>%
+    mutate(across(where(is.character), ~ gsub(",", ".", .))) %>%  # vírgula → ponto
+    mutate(across(everything(), ~ na_if(., "--"))) %>%            # "--" → NA
+    mutate(across(everything(), ~ na_if(., ""))) %>%              # "" → NA
+    mutate(across(-c(ano, unidade_geografica, localizacao, dependencia_administrativa),
+                  ~ suppressWarnings(as.numeric(.))))              # converter números
+  
+  return(df)
+}
 
 
-3. **Análises Realizadas**
+```
 
-- Estatísticas descritivas
+Esta função realiza o tratamento das planilhas de rendimento do INEP, que possuem várias linhas de cabeçalhos decorativos e valores inconsistentes.
+Primeiro ignoramos as linhas iniciais e aplicamos nomes padronizados às colunas, garantindo que cada indicador (aprovação, reprovação e abandono por série e nível de ensino) seja identificado corretamente.
+Em seguida, substituímos vírgulas por pontos, convertemos valores inválidos ("--", strings vazias) em NA e transformamos as colunas numéricas para permitir análises estatísticas confiáveis.</br></br>
 
-- Análise exploratória (EDA)
+### Após a Função limpar_inep_distorcao
 
-- Visualização de dados (gráficos comparativos, séries temporais, mapas — quando aplicável)
+<hr style="height: 1px; background: #000;">
 
-- Interpretação dos resultados </br></br>
+```{r Função para tratar distorção}
+
+limpar_inep_distorcao <- function(arquivo) {
+  
+  df <- read_excel(arquivo, skip = 9, col_names = FALSE)
+  
+  nomes <- c(
+    "ano", "unidade_geografica", "localizacao", "dependencia_administrativa",
+    
+    # TDI – Ensino Fundamental
+    paste0("tdi_fund_", c(
+      "total","anos_iniciais","anos_finais",
+      "1ano","2ano","3ano","4ano","5ano",
+      "6ano","7ano","8ano","9ano"
+    )),
+    
+    # TDI – Ensino Médio
+    paste0("tdi_med_", c("total","1serie","2serie","3serie","4serie"))
+  )
+  
+  colnames(df) <- nomes
+  
+  df <- df %>%
+    mutate(across(where(is.character), ~ gsub(",", ".", .))) %>%
+    mutate(across(everything(), ~ na_if(., "--"))) %>%
+    mutate(across(everything(), ~ na_if(., ""))) %>%
+    mutate(across(-c(ano, unidade_geografica, localizacao, dependencia_administrativa),
+                  ~ suppressWarnings(as.numeric(.))))
+  
+  return(df)
+}
 
 
-4. **Ferramentas Utilizadas**
+```
 
-- Linguagem R
+Esta função segue a mesma lógica da anterior, mas aplicada às planilhas de distorção idade-série.
+Após ignorar os cabeçalhos decorativos, atribuímos nomes coerentes às colunas (TDI no EF e EM), padronizamos valores, tratamos ausências e convertemos os indicadores para formato numérico.
+Isso garante que os dados de TDI fiquem organizados e consistentes para integração com as demais bases.</br></br>
 
-- Pacotes como dplyr, ggplot2, readr, tidyr, entre outros.
+### Após o Bloco que Importa os Dados
 
-## 📂 Fonte dos Dados
+<hr style="height: 1px; background: #000;">
 
-Todos os dados utilizados neste projeto estão disponíveis publicamente no portal do INEP, na área de dados abertos:
+```{r Baixando dados, warning=FALSE, message=FALSE}
 
-## 🔗 Indicadores Educacionais — INEP
-https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/indicadores-educacionais
+library(readxl)
+library(dplyr)
+library(purrr)
+library(janitor)
+
+caminho <- "C:/Users/carlo/Downloads/data"
+
+arquivos <- list(
+  rendimento_2022 = file.path(caminho, "tx_rend_brasil_regioes_ufs_2022.xlsx"),
+  rendimento_2023 = file.path(caminho, "tx_rend_brasil_regioes_ufs_2023.xlsx"),
+  rendimento_2024 = file.path(caminho, "tx_rend_brasil_regioes_ufs_2024.xlsx"),
+  
+  distorcao_2022 = file.path(caminho, "TDI_BRASIL_REGIOES_UFS_2022.xlsx"),
+  distorcao_2023 = file.path(caminho, "TDI_BRASIL_REGIOES_UFS_2023.xlsx"),
+  distorcao_2024 = file.path(caminho, "TDI_BRASIL_REGIOES_UFS_2024.xlsx")
+)
+
+dados <- map(arquivos, ~ read_excel(.x) %>% clean_names())
+
+names(dados) <- names(arquivos)
+
+```
+
+Aqui apenas organizamos os caminhos dos arquivos e realizamos uma leitura inicial.
+Esse passo cria uma estrutura clara e reproduzível para acessar todas as planilhas do INEP antes do tratamento definitivo.</br></br>
+
+### Após o Bloco que Aplica as Funções de Tratamento
+
+<hr style="height: 1px; background: #000;">
+
+```{r Função de tratamento, warning=FALSE, message=FALSE}
+
+dados <- map2(
+  names(arquivos),
+  arquivos,
+  function(nm, arq) {
+    if (grepl("rendimento", nm)) {
+      limpar_inep_rendimento(arq)
+    } else {
+      limpar_inep_distorcao(arq)
+    }
+  }
+) %>% set_names(names(arquivos))
+
+
+```
+
+Utilizamos map2() para aplicar automaticamente a função correta (rendimento ou distorção) a cada arquivo.
+Isso padroniza o processo de limpeza para todos os anos (2022–2024) e assegura que todas as planilhas sejam tratadas da mesma maneira, eliminando inconsistências.</br></br>
+
+### Após Unir os Data Frames (bind_rows)
+
+<hr style="height: 1px; background: #000;">
+
+```{r Unido data frames}
+
+# Rendimento (2022–2024)
+rendimento <- bind_rows(
+  dados$rendimento_2022 %>% mutate(ano = 2022),
+  dados$rendimento_2023 %>% mutate(ano = 2023),
+  dados$rendimento_2024 %>% mutate(ano = 2024)
+)
+
+# Distorção idade-série
+distorcao <- bind_rows(
+  dados$distorcao_2022 %>% mutate(ano = 2022),
+  dados$distorcao_2023 %>% mutate(ano = 2023),
+  dados$distorcao_2024 %>% mutate(ano = 2024)
+)
+
+```
+
+Neste passo consolidamos os dados de cada ano em duas grandes bases: rendimento e distorção.
+A união por ano permite análises comparativas, tendências e agregação dos indicadores ao longo do tempo.</br></br>
+
+###  Após o inner_join() (base_final)
+
+<hr style="height: 1px; background: #000;">
+
+```{r Unindo dataframes,  warning=FALSE}
+# --- 1. Unir os datasets já tratados ---
+rendimento$origem <- "rendimento"
+distorcao$origem <- "distorcao"
+
+# Garantir que ano, localização, unidade, dependência existam em ambos
+chaves <- c("ano","unidade_geografica","localizacao","dependencia_administrativa")
+
+# Selecionar só variáveis importantes
+rend_key <- rendimento %>% select(any_of(chaves),
+                                  starts_with("aprov"),
+                                  starts_with("reprov"),
+                                  starts_with("aband"))
+
+dist_key <- distorcao %>% select(any_of(chaves),
+                                  starts_with("tdi"))
+
+# --- 2. Juntar (inner_join garante alinhamento perfeito entre bases) ---
+base_final <- rend_key %>%
+  inner_join(dist_key, by = chaves)
+
+glimpse(base_final)
+
+```
+
+Aqui unimos as duas bases tratadas utilizando variáveis comuns (ano, unidade, localização e dependência).
+O uso de inner_join garante que apenas combinações válidas e correspondentes sejam mantidas.
+O resultado é um dataset final completo, contendo simultaneamente aprovação, abandono e distorção para a mesma unidade de análise.</br></br>
+
+### Após a Criação das Variáveis Centrais
+
+<hr style="height: 1px; background: #000;">
+
+```{r variáveis centrais para análise}
+
+base_final <- base_final %>%
+  mutate(
+    # Indicadores combinados
+    distorcao_total = rowMeans(select(., tdi_fund_total, tdi_med_total), na.rm = TRUE),
+    abandono_total  = rowMeans(select(., aband_fund_total, aband_med_total), na.rm = TRUE),
+    aprovacao_total = rowMeans(select(., aprov_fund_total, aprov_med_total), na.rm = TRUE)
+  )
+
+```
+
+Criamos três indicadores agregados principais — aprovação total, abandono total e distorção total.
+Eles sintetizam dezenas de variáveis em métricas únicas que representam o desempenho geral da educação.
+Esses indicadores servem como base para toda a análise estatística e gráfica do estudo.</br></br>
+
+### Conjunto de Dados Final
+
+<hr style="height: 1px; background: #000;">
+
+```{r, message=FALSE, warning=FALSE}
+
+# Mostrar 10 linhas e todas as colunas
+
+head(base_final, 10)
+
+```
+
+## Análises {.tabset}
+
+### Principais Estatísticas
+
+<hr style="height: 1px; background: #000;">
+
+```{r}
+
+library(dplyr)
+
+resumo_variaveis <- base_final %>%
+  summarise(
+    across(
+      c(aprovacao_total, abandono_total, distorcao_total),
+      list(media = ~mean(., na.rm = TRUE),
+           mediana = ~median(., na.rm = TRUE),
+           minimo = ~min(., na.rm = TRUE),
+           maximo = ~max(., na.rm = TRUE),
+           desvio_padrao = ~sd(., na.rm = TRUE))
+    )
+  )
+
+resumo_variaveis
+
+```
+
+As estatísticas mostram que a aprovação média é alta, enquanto abandono e distorção variam mais entre regiões e redes. O desvio-padrão relativamente elevado da distorção indica forte desigualdade entre unidades. Essas métricas oferecem uma visão geral do comportamento dos indicadores e ajudam a contextualizar padrões mais profundos.</br></br>
+
+### Análise de Correlações
+
+<hr style="height: 1px; background: #000;">
+
+```{r Análise 1}
+
+library(dplyr)
+
+correlacoes <- base_final %>% 
+  select(aprovacao_total, distorcao_total, abandono_total)
+
+as.data.frame(cor(correlacoes, use = "complete.obs"))
+
+
+```
+
+A análise de correlação revela relações claras:
+
+- Aprovação × Distorção: relação negativa moderada (cerca de –0.67).
+
+- Aprovação × Abandono: relação negativa forte (aprox. –0.79).
+
+- Distorção × Abandono: relação positiva significativa (aprox. +0.70).
+
+Esses resultados indicam que quanto maior a distorção e o abandono, menor tende a ser a taxa de aprovação.</br></br>
+
+### Tabelas Resumo (por ano, UF, localização, dependência)
+
+<hr style="height: 1px; background: #000;">
+
+```{r Tabela Resumo, warning=FALSE}
+
+tabela_resumo <- base_final %>%
+  group_by(ano, unidade_geografica, localizacao) %>%
+  summarise(
+    media_aprov = mean(aprovacao_total, na.rm = TRUE),
+    media_aband = mean(abandono_total, na.rm = TRUE),
+    media_tdi   = mean(distorcao_total, na.rm = TRUE),
+    .groups = "drop"
+  )
+tabela_resumo
+
+```
+
+Os resumos por grupo mostram desigualdades persistentes: redes rurais e algumas UFs mantêm maiores níveis de distorção e abandono, enquanto regiões urbanas e federais apresentam melhores taxas de aprovação. Essas variações ajudam a identificar grupos e contextos prioritários.</br></br>
+
+### Distorção vs Aprovação
+
+<hr style="height: 1px; background: #000;">
+
+```{r, warning=FALSE, message=FALSE}
+
+library(ggplot2)
+
+ggplot(base_final, aes(x = distorcao_total, y = aprovacao_total, color = localizacao)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Relação entre Distorção Idade-Série e Taxa de Aprovação",
+    x = "Distorção Idade-Série (%)",
+    y = "Taxa de Aprovação (%)"
+  )
+
+```
+
+O gráfico evidencia uma tendência decrescente: unidades com maior distorção idade-série apresentam sistematicamente menores taxas de aprovação. A linha de regressão confirma essa relação negativa.</br></br>
+
+### Abandono vs Aprovação
+
+<hr style="height: 1px; background: #000;">
+
+```{r, warning=FALSE, message=FALSE}
+
+ggplot(base_final, aes(x = abandono_total, y = aprovacao_total)) +
+  geom_point(alpha = 0.6, color = "darkred") +
+  geom_smooth(method = "lm", color = "black") +
+  labs(
+    title = "Relação entre Abandono Escolar e Taxa de Aprovação",
+    x = "Taxa de abandono (%)",
+    y = "Taxa de aprovação (%)"
+  ) +
+  theme_minimal()
+
+```
+
+Há uma clara queda na aprovação conforme o abandono escolar cresce. A dispersão mostra que mesmo pequenos aumentos no abandono estão associados a reduções perceptíveis na aprovação.</br></br>
+
+### Distorção vs Abandono
+
+<hr style="height: 1px; background: #000;">
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(base_final, aes(x = distorcao_total, y = abandono_total)) +
+  geom_point(alpha = 0.6, color = "steelblue") +
+  geom_smooth(method = "lm", color = "black") +
+  labs(
+    title = "Relação entre Distorção Idade-Série e Abandono Escolar",
+    x = "Distorção idade-série (%)",
+    y = "Abandono escolar (%)"
+  ) +
+  theme_minimal()
+
+```
+
+A relação positiva indica que escolas e redes com maior distorção idade-série também tendem a apresentar maior abandono. Isso reforça a ideia de que atraso escolar e desistência fazem parte de um mesmo ciclo de exclusão.</br></br>
+
+## Conclusão {.tabset}
+
+<hr style="height: 1px; background: #000;">
+
+A análise dos indicadores educacionais brasileiros entre 2022 e 2024 mostra de forma consistente que a distorção idade-série e o abandono escolar exercem influência direta e negativa sobre a taxa de aprovação. Os resultados revelam três padrões principais: (1) quanto maior a distorção idade-série, menor tende a ser a aprovação; (2) quanto maior o abandono, menor a aprovação; e (3) distorção e abandono caminham juntos, reforçando mutuamente seus efeitos sobre o fluxo escolar. Essa dinâmica ficou evidente nas correlações encontradas: a aprovação apresenta correlações negativas tanto com a distorção (r = –0.67) quanto com o abandono (r = –0.79), enquanto distorção e abandono possuem correlação positiva significativa (r = 0.70).
+
+Do ponto de vista educacional, os resultados indicam que o fracasso escolar não se distribui de forma isolada: ele se acumula e se amplifica ao longo do tempo. Estudantes com atraso escolar enfrentam maiores barreiras de aprendizagem, maior probabilidade de reprovação e, como consequência, maior risco de abandono. Esses fatores reduzem diretamente a taxa de aprovação, criando um ciclo prolongado de exclusão educacional — especialmente em contextos mais vulneráveis. Assim, os achados reforçam a necessidade de políticas públicas voltadas à correção de fluxo, monitoramento preventivo do abandono, recuperação de aprendizagem, e intervenções direcionadas a grupos específicos (como redes rurais e estaduais).
+
+Em síntese, entender essas relações não apenas esclarece o funcionamento dos indicadores educacionais, mas também contribui para a construção de um diagnóstico sólido que pode orientar gestores, escolas e pesquisadores na formulação de ações eficazes para melhorar o desempenho e promover maior equidade no sistema educacional brasileiro. </br></br>
+</div>
